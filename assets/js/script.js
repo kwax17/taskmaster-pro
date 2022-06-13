@@ -1,4 +1,3 @@
-
 var tasks = {};
 
 var createTask = function(taskText, taskDate, taskList) {
@@ -62,8 +61,7 @@ $(".list-group").on("click", "p", function() {
 $(".list-group").on("blur", "textarea", function() {
   // get teh textarea's current value/text
   var text = $(this)
-    .val()
-    .trim();
+    .val();
 
   // get the parent ul's id attribute
   var status = $(this)
@@ -107,16 +105,16 @@ $(".list-group").on("click", "span", function(){
 
 // value of due date was changed
 $(".list-group").on("blur", "input[type='text]", function() {
-  // get current text
-  var date = $(this)
-  .closest(".list-group")
-  .attr("id")
-  .replace("list-", "");
+  var date = $(this).val();
 
-  // get the tasks positions in the list of other li elements
+  // get status type and position in the list
+  var status = $(this)
+    .closest(".list-group")
+    .attr("id")
+    .replace("list-", "");
   var index = $(this)
-  .closest(".list-group-item")
-  .index();
+    .closest(".list-group-item")
+    .index();
 
   // update task in arry and re save the localStorage
   tasks[status][index].date = date;
@@ -172,6 +170,70 @@ $("#remove-tasks").on("click", function() {
     $("#list-" + key).empty();
   }
   saveTasks();
+});
+
+// draggability
+$(".card .list-group").sortable({
+  connectWith: $(".card .list-group"),
+  scroll: false,
+  tolerance: "pointer",
+  helper: "clone",
+  activate: function(event, ui) {
+    console.log(ui);
+  },
+  deactivate: function(event) {
+    console.log(ui);
+  },
+  over: function(event) {
+    console.log(event);
+  },
+  out: function(event) {
+    console.log(event);
+  },
+  update: function() {
+    // array to store the task data in
+    var tempArr = [];
+
+    // loop over current set of children in sortable list
+    $(this).children().each(function() {
+      tempArr.push({
+        text: $(this)
+          .find("p")
+          .text()
+          .trim(),
+        date: $(this)
+          .find("span")
+          .text()
+          .trim()
+      });
+    });
+
+    // trim down list's ID to match object property
+    var arrName = $(this)
+    .attr("id")
+    .replace("list-", "");
+
+    // update array on tasks object and save
+    tasks[arrName] = tempArr;
+    saveTasks();
+  },
+  stop: function(event) {
+    $(this).removeClass("dropover");
+  }
+});
+
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function(event, ui) {
+    ui.draggable.remove();
+  },
+  over: function(event, ui) {
+    console.log(ui);
+  },
+  out: function(event, ui) {
+    console.log(ui);
+  }
 });
 
 // load tasks for the first time
